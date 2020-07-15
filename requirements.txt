@@ -1,3 +1,3 @@
 python-dateutil
-git+https://github.com/fexd12/iqoptionapi.git
-python-telegram-bot
+git+git://github.com/iqoptionapi/iqoptionapi.git
+pyTelegramBotAPI

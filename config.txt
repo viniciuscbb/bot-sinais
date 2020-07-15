@@ -1,11 +1,20 @@
 [GERAL]
-stop_win = 30
-stop_loss = 15
+entrada = 2
+conta = PRACTICE
+# PRACTICE / REAL
+
+stop_win = 50
+stop_loss = 20
+
 martingale = S
+valorGale = 2.3
 sorosgale = N
-niveis = 1
+niveis = 2
+
+analisarTendencia = N
+noticias = S
 
 [telegram]
-telegram_token = <seu token aqui>
-telegram_id = <id do grupo >
-usar_bot = N
+telegram_token = TOKEN TELEGRAM
+telegram_id = ID TELEGRAM
+usar_bot = S
