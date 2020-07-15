@@ -9,18 +9,27 @@ Exemplo de sinais:<br>
   <p>H1;eurusd;00:00:00;CALL - timeframe de 1 hora</p>
 <br>
 Os sinais deve ser inserido em sinais.txt <br>
-<br>
+
 # Configurações
-<br>
+------
+
 Em config.txt colocar:
-  - entrada (valor da entrada)
-  - stop_win e stop_los;
-  - tipo de conta;
-  - martingale (S ou N)
-  - valorGale
-  - niveis (quantidade de MT)
-  - analisarTendencia (S ou N)
-  - noticias (S ou N)
+<br> 
+  ⋅⋅* entrada (valor da entrada)
+  <br> 
+  ⋅⋅* stop_win e stop_los;
+  <br> 
+  ⋅⋅* tipo de conta;
+  <br> 
+  ⋅⋅* martingale (S ou N)
+  <br> 
+  ⋅⋅* valorGale
+  <br> 
+  ⋅⋅* niveis (quantidade de MT)
+  <br> 
+  ⋅⋅* analisarTendencia (S ou N)
+  <br> 
+  ⋅⋅* noticias (S ou N)
 <br> 
 Instalar as dependencias necessarias:<br>
 <p>pip install -r requirements.txt<p>
