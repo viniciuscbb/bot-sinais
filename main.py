@@ -53,33 +53,25 @@ def carregaSinais():
 def entradas(par, entrada, direcao, config, opcao, timeframe):
     if opcao == 'digital':
         status, id = API.buy_digital_spot(par, entrada, direcao, timeframe)
-        if status:
-            # STOP WIN/STP LOSS
 
-            banca_att = banca()
-            stop_loss = False
-            stop_win = False
-
-            if round((banca_att - float(config['banca_inicial'])), 2) <= (abs(float(config['stop_loss'])) * -1.0):
-                stop_loss = True
-
-            if round((banca_att - float(config['banca_inicial'])), 2) >= abs(float(config['stop_win'])):
-                stop_win = True
-
-            while True:
-                status, lucro = API.check_win_digital_v2(id)
-                #print(API.check_win_digital_v2(id))
-
-                if status:
-                    if lucro > 0:
-                        return 'win', round(lucro, 2), stop_win
-                    elif lucro == 0.0:
-                        return 'doji', 0, False
-                    else:
-                        return 'loss', round(lucro, 2), stop_loss
-                    break
-        else:
-            return 'error', 0, False
+        while True:
+            status, lucro = API.check_win_digital_v2(id)
+            #print(API.check_win_digital_v2(id))
+            if status:
+                banca_att = banca()
+                stop_loss = False
+                stop_win = False
+                if round((banca_att - float(config['banca_inicial'])), 2) <= (abs(float(config['stop_loss'])) * -1.0):
+                    stop_loss = True
+                if round((banca_att - float(config['banca_inicial'])), 2) >= abs(float(config['stop_win'])):
+                    stop_win = True
+                if lucro > 0:
+                    return 'win', round(lucro, 2), stop_win
+                elif lucro == 0.0:
+                    return 'doji', 0, False
+                else:
+                    return 'loss', round(lucro, 2), stop_loss
+                break
 
     elif opcao == 'binaria':
         status, id = API.buy(entrada, par, direcao, timeframe)
@@ -142,7 +134,7 @@ def Mensagem(mensagem):
     if VERIFICA_BOT == 'S':
         token = config['telegram_token']
         chatID = TELEGRAM_ID
-        send = f'https://api.telegram.org/bot{token}/sendMessage?chat_id={chatID}&parse_mode=Markdown&text={mensagem}'
+        send = f'http://api.telegram.org/bot{token}/sendMessage?chat_id={chatID}&parse_mode=Markdown&text={mensagem}'
         return requests.get(send)
 
 def tendencia(par, timeframe):
@@ -182,48 +174,57 @@ def checkProfit(par, timeframe):
     else:
         "erro"
 
-def noticas(paridade, minutos_lista):
-    objeto = json.loads(texto)
+def noticas(paridade):
+    global noticas
 
-    # Verifica se o status code é 200 de sucesso
-    if response.status_code != 200 or objeto['success'] != True:
-        print('Erro ao contatar notícias')
+    if noticias == 'S':
+        objeto = json.loads(texto)
 
-    # Pega a data atual
-    data = datetime.now()
-    tm = tz.gettz('America/Sao Paulo')
-    data_atual = data.astimezone(tm)
-    data_atual = data_atual.strftime('%Y-%m-%d')
+        # Verifica se o status code é 200 de sucesso
+        if response.status_code != 200 or objeto['success'] != True:
+            print('Erro ao contatar notícias')
+            
+        # Pega a data atual
+        data = datetime.now()
+        tm = tz.gettz('America/Sao Paulo')
+        data_atual = data.astimezone(tm)
+        data_atual = data_atual.strftime('%Y-%m-%d')
+        tempoAtual = data.astimezone(tm)
+        minutos_lista = tempoAtual.strftime('%H:%M:%S')
 
-    # Varre todos o result do JSON
-    for noticia in objeto['result']:
-        # Separa a paridade em duas Ex: AUDUSD separa AUD e USD para comparar os dois
-        paridade1 = paridade[0:3]
-        paridade2 = paridade[3:6]
-        
-        # Pega a paridade, impacto e separa a data da hora da API
-        moeda = noticia['economy']
-        impacto = noticia['impact']
-        atual = noticia['data']
-        data = atual.split(' ')[0]
-        hora = atual.split(' ')[1]
-        
-        # Verifica se a paridade existe da noticia e se está na data atual
-        if moeda == paridade1 or moeda == paridade2 and data == data_atual:
-            formato = '%H:%M:%S'
-            d1 = datetime.strptime(hora, formato)
-            d2 = datetime.strptime(minutos_lista, formato)
-            dif = (d1 - d2).total_seconds()
-            # Verifica a diferença entre a hora da noticia e a hora da operação
-            minutesDiff = dif / 60
-        
-            # Verifica se a noticia irá acontencer 30 min antes ou depois da operação
-            if minutesDiff >= -30 and minutesDiff <= 0 or minutesDiff <= 30 and minutesDiff >= 0:
-                return impacto, moeda, hora, True
+        # Varre todos o result do JSON
+        for noticia in objeto['result']:
+            # Separa a paridade em duas Ex: AUDUSD separa AUD e USD para comparar os dois
+            paridade1 = paridade[0:3]
+            paridade2 = paridade[3:6]
+
+            # Pega a paridade, impacto e separa a data da hora da API
+            moeda = noticia['economy']
+            impacto = noticia['impact']
+            atual = noticia['data']
+            data = atual.split(' ')[0]
+            hora = atual.split(' ')[1]
+
+            # Verifica se a paridade existe da noticia e se está na data atual
+            if moeda == paridade1 or moeda == paridade2 and data == data_atual:
+                formato = '%H:%M:%S'
+                d1 = datetime.strptime(hora, formato)
+                d2 = datetime.strptime(minutos_lista, formato)
+                dif = (d1 - d2).total_seconds()
+                # Verifica a diferença entre a hora da noticia e a hora da operação
+                minutesDiff = dif / 60
+
+                # Verifica se a noticia irá acontencer 30 min antes ou depois da operação
+                if minutesDiff >= -30 and minutesDiff <= 0 or minutesDiff <= 30 and minutesDiff >= 0:
+                    if impacto > 1:
+                        return impacto, moeda, hora, True
+                else:
+                    pass
             else:
-                return 0, 0, 0, False
-        else:
-            return 0, 0, 0, False
+                pass
+        return 0, 0, 0, False
+    else:
+        return 0, 0, 0, False
 
 print('=========================================\n|   INSIRA E-MAIL E SENHA DA IQOPTION   |\n=========================================')
 email = str(input('E-mail: '))
@@ -246,7 +247,7 @@ if API.check_connect():
     os.system('cls') 
     print('# Conectado com sucesso!')
     if noticias == 'S':
-        response = requests.get("https://botpro.com.br/calendario-economico/")
+        response = requests.get("http://botpro.com.br/calendario-economico/")
         texto = response.content
 else:
     print(' Erro ao conectar')
@@ -287,11 +288,10 @@ for x in sinais:
         # Verifica se tem noticias 40 seg antes
         if noticias == 'S':
             if dif == 40:
-                impacto, moeda, hora, stts = noticas(par,minutos_lista)
+                impacto, moeda, hora, stts = noticas(par)
                 if stts:
-                    if impacto > 1:
-                        Mensagem(f' NOTÍCIA COM IMPACTO DE {impacto} TOUROS NA MOEDA {moeda} ÀS {hora}!')
-                        break
+                    Mensagem(f' NOTÍCIA COM IMPACTO DE {impacto} TOUROS NA MOEDA {moeda} ÀS {hora}!')
+                    break
 
         # Verifica opção binário ou digita quando falta 25 seg
         if dif == 25:
