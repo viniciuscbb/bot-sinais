@@ -1,17 +1,17 @@
 [GERAL]
-entrada = 2
+entrada = 3
 conta = PRACTICE
 # PRACTICE / REAL
 
-stop_win = 50
-stop_loss = 20
+stop_win = 20
+stop_loss = 10
 
 martingale = S
 valorGale = 2.3
 sorosgale = N
 niveis = 2
 
-analisarTendencia = N
+analisarTendencia = S
 noticias = S
 
 [telegram]
